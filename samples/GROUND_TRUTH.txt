@@ -1,0 +1,11 @@
+Ground-truth labels for the bundled samples (ISIC 2018 Task 3 validation split).
+Held out of nothing - these images were in the model's validation set, so treat
+them as a demo aid, not as evidence of generalisation.
+
+ISIC_0034329.jpg  ->  MEL
+ISIC_0034321.jpg  ->  NV
+ISIC_0034323.jpg  ->  BCC
+ISIC_0034332.jpg  ->  AKIEC
+ISIC_0034326.jpg  ->  BKL
+ISIC_0034334.jpg  ->  DF
+ISIC_0034455.jpg  ->  VASC

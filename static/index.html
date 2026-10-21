@@ -1,0 +1,621 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Dermora AI — AI-assisted skin lesion screening</title>
+<meta name="description" content="Dermora AI analyses dermoscopic images for seven classes of skin lesion, with explainable attention mapping, ABCD morphometry and clinical triage guidance.">
+<link rel="stylesheet" href="/static/styles.css">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><circle cx='16' cy='16' r='13' fill='none' stroke='%2314e0d0' stroke-width='3'/><circle cx='16' cy='16' r='5' fill='%2314e0d0'/></svg>">
+</head>
+<body>
+
+<div class="aurora" aria-hidden="true"></div>
+
+<!-- ══════════════════════════ TOP BAR ══════════════════════════ -->
+<header class="topbar">
+  <div class="topbar-inner">
+    <button class="brand" data-view="home" aria-label="Dermora AI home">
+      <svg class="mark" viewBox="0 0 40 40" aria-hidden="true">
+        <circle cx="20" cy="20" r="16" class="mark-ring"/>
+        <circle cx="20" cy="20" r="9" class="mark-mid"/>
+        <circle cx="20" cy="20" r="3.4" class="mark-core"/>
+      </svg>
+      <span class="brand-text"><strong>DERMORA</strong><em>AI</em></span>
+    </button>
+
+    <nav class="topnav" id="topnav">
+      <button class="nav-item" data-view="home">Home</button>
+      <button class="nav-item" data-view="analyse">Screening</button>
+      <button class="nav-item" data-view="learn">Learn</button>
+      <button class="nav-item" data-view="model">Technology</button>
+    </nav>
+
+    <div class="topbar-right">
+      <div class="status" id="status" title="Model status">
+        <i class="dot loading"></i>
+        <div>
+          <b id="statusText">Loading model</b>
+          <small id="statusSub">initialising</small>
+        </div>
+      </div>
+      <button class="btn" data-view="analyse">
+        <svg viewBox="0 0 24 24"><path d="M12 16V4M7 9l5-5 5 5M4 17v3h16v-3"/></svg>
+        Start screening
+      </button>
+      <button class="burger" id="burger" aria-label="Menu"><span></span><span></span><span></span></button>
+    </div>
+  </div>
+</header>
+
+<main class="stage">
+
+<!-- ══════════════════════════ HOME ══════════════════════════ -->
+<section class="view active" id="view-home">
+
+  <div class="hero">
+    <div class="hero-copy">
+      <span class="eyebrow"><i></i>Trained on ISIC 2018 · 10,015 dermoscopic images</span>
+      <h1>Catch skin cancer<br><span class="grad">while it is still small.</span></h1>
+      <p class="lede">
+        Dermora AI reads a dermoscopic image and returns a probability across seven
+        lesion classes, an attention map showing what drove the decision, an
+        independent morphometric second opinion, and a clear triage recommendation —
+        in under a second, entirely on your own machine.
+      </p>
+      <div class="hero-cta">
+        <button class="btn lg" data-view="analyse">
+          <svg viewBox="0 0 24 24"><path d="M12 16V4M7 9l5-5 5 5M4 17v3h16v-3"/></svg>
+          Analyse an image
+        </button>
+        <button class="btn lg ghost" data-scroll="how">See how it works</button>
+      </div>
+      <div class="hero-assure">
+        <span><svg viewBox="0 0 24 24"><path d="M12 3 4 7v6c0 5 3.4 7.6 8 8 4.6-.4 8-3 8-8V7z"/><path d="m9 12 2 2 4-4"/></svg>No upload to any server</span>
+        <span><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>Result in ~1 second</span>
+        <span><svg viewBox="0 0 24 24"><path d="M4 7h16v13H4zM8 7V4h8v3"/></svg>PDF report included</span>
+      </div>
+    </div>
+
+    <div class="hero-visual" aria-hidden="true">
+      <div class="scanner">
+        <svg viewBox="0 0 320 320" class="scan-svg">
+          <defs>
+            <radialGradient id="lesionGrad">
+              <stop offset="0%" stop-color="#6b4230"/>
+              <stop offset="55%" stop-color="#8a5a3d"/>
+              <stop offset="100%" stop-color="#c99a7d"/>
+            </radialGradient>
+            <linearGradient id="sweepGrad" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stop-color="#14e0d0" stop-opacity="0"/>
+              <stop offset="50%" stop-color="#14e0d0" stop-opacity=".85"/>
+              <stop offset="100%" stop-color="#14e0d0" stop-opacity="0"/>
+            </linearGradient>
+          </defs>
+          <circle cx="160" cy="160" r="150" class="scan-ring outer"/>
+          <circle cx="160" cy="160" r="126" class="scan-ring mid"/>
+          <g class="skin">
+            <circle cx="160" cy="160" r="118" fill="#e8bda3"/>
+            <path d="M110 150c20-26 54-34 84-18 26 14 34 46 20 70-16 28-58 34-84 16-24-16-32-46-20-68z" fill="url(#lesionGrad)"/>
+            <path d="M132 140c14-10 34-8 46 4" stroke="#4a2c1e" stroke-width="3" fill="none" opacity=".5"/>
+            <circle cx="150" cy="182" r="7" fill="#553120" opacity=".65"/>
+            <circle cx="186" cy="158" r="5" fill="#553120" opacity=".5"/>
+          </g>
+          <rect x="42" y="0" width="236" height="42" fill="url(#sweepGrad)" class="sweep"/>
+          <g class="reticle">
+            <path d="M60 96V60h36M224 60h36v36M260 224v36h-36M96 260H60v-36"/>
+          </g>
+        </svg>
+
+        <div class="float-card fc-1">
+          <div class="fc-head"><i class="risk-dot" style="background:#ff3b5c"></i>Melanoma</div>
+          <div class="fc-bar"><i style="width:78%;background:#ff3b5c"></i></div>
+          <span>78.4% · urgent referral</span>
+        </div>
+        <div class="float-card fc-2">
+          <div class="fc-head"><i class="risk-dot" style="background:#3ddc97"></i>Attention focal</div>
+          <div class="fc-bar"><i style="width:64%;background:#3ddc97"></i></div>
+          <span>Eigen-CAM concentration 64%</span>
+        </div>
+        <div class="float-card fc-3">
+          <div class="fc-head">ABCD score</div>
+          <strong>6.4</strong><span>highly suspicious</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- trust bar -->
+  <div class="trustbar">
+    <div><b>10,015</b><span>training images</span></div>
+    <div><b>7</b><span>lesion classes</span></div>
+    <div><b>4-view</b><span>test-time augmentation</span></div>
+    <div><b>100%</b><span>on-device processing</span></div>
+    <div><b>0</b><span>data leaves your computer</span></div>
+  </div>
+
+  <!-- how it works -->
+  <section class="band" id="how">
+    <div class="band-head">
+      <span class="kicker">How it works</span>
+      <h2>Four stages, every one of them visible to you</h2>
+      <p>Nothing in the pipeline is hidden behind a single number. Each stage reports
+         its own result, and the interface tells you when they disagree.</p>
+    </div>
+    <div class="steps-grid">
+      <article class="step-card">
+        <span class="step-n">01</span>
+        <h3>Quality gate</h3>
+        <p>Focus, exposure, contrast, glare and skin-tone coverage are measured before
+           anything else. An unusable image is flagged rather than quietly scored.</p>
+      </article>
+      <article class="step-card">
+        <span class="step-n">02</span>
+        <h3>Classification</h3>
+        <p>A YOLOv8 network scores all seven classes across every anchor. Scores are
+           pooled and converted into a true probability distribution, averaged over
+           four mirrored views of the image.</p>
+      </article>
+      <article class="step-card">
+        <span class="step-n">03</span>
+        <h3>Explanation</h3>
+        <p>Eigen-CAM projects the network's internal features into a heat map, so you
+           can confirm it looked at the lesion and not at a hair, a ruler or the
+           background.</p>
+      </article>
+      <article class="step-card">
+        <span class="step-n">04</span>
+        <h3>Second opinion</h3>
+        <p>Classical image analysis measures the lesion's asymmetry, border, colour and
+           structure and scores the ABCD rule of dermoscopy — completely independently
+           of the network.</p>
+      </article>
+    </div>
+  </section>
+
+  <!-- capabilities -->
+  <section class="band">
+    <div class="band-head">
+      <span class="kicker">Capabilities</span>
+      <h2>Built to be questioned, not just believed</h2>
+    </div>
+    <div class="feat-grid">
+      <article class="feat">
+        <svg viewBox="0 0 24 24"><path d="M3 12h4l3 8 4-16 3 8h4"/></svg>
+        <h3>Full seven-class posterior</h3>
+        <p>Every class keeps its probability mass, so the differential diagnosis is
+           preserved instead of being discarded by the detector's filtering step.</p>
+      </article>
+      <article class="feat">
+        <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7-10-7-10-7z"/></svg>
+        <h3>Explainable attention</h3>
+        <p>A heat map plus a concentration statistic that says out loud whether the
+           model's attention was focal or diffuse.</p>
+      </article>
+      <article class="feat">
+        <svg viewBox="0 0 24 24"><path d="M12 3v18M3 12h18"/><circle cx="12" cy="12" r="9"/></svg>
+        <h3>ABCD morphometry</h3>
+        <p>Hair removal, lesion segmentation and the Stolz ABCD rule, computed with
+           deterministic image processing you can audit line by line.</p>
+      </article>
+      <article class="feat">
+        <svg viewBox="0 0 24 24"><path d="M12 9v5M12 17.5v.5"/><path d="M10.3 4.3 2.6 18a2 2 0 0 0 1.7 3h15.4a2 2 0 0 0 1.7-3L13.7 4.3a2 2 0 0 0-3.4 0z"/></svg>
+        <h3>Honest uncertainty</h3>
+        <p>Top-two margin, predictive entropy and agreement across augmented views are
+           all surfaced. Indeterminate results are labelled as such.</p>
+      </article>
+      <article class="feat">
+        <svg viewBox="0 0 24 24"><path d="M4 6h16M4 12h16M4 18h10"/></svg>
+        <h3>Batch triage</h3>
+        <p>Queue up to forty images and get a worklist ordered by clinical concern —
+           the way screening actually happens at scale.</p>
+      </article>
+      <article class="feat">
+        <svg viewBox="0 0 24 24"><path d="M12 4v11M8 11l4 4 4-4M5 19h14"/></svg>
+        <h3>Clinical PDF reports</h3>
+        <p>One click produces a case report with imagery, posterior, morphometry,
+           management guidance and the disclaimer attached.</p>
+      </article>
+    </div>
+  </section>
+
+  <!-- lesion types -->
+  <section class="band">
+    <div class="band-head">
+      <span class="kicker">What it detects</span>
+      <h2>Seven classes from the ISIC 2018 taxonomy</h2>
+      <p>Two malignant, one pre-malignant, four benign. Select any class to read what
+         it is, how it looks under dermoscopy, and how it is managed.</p>
+    </div>
+    <div class="type-grid" id="typeGrid"></div>
+  </section>
+
+  <!-- ABCDE -->
+  <section class="band">
+    <div class="band-head">
+      <span class="kicker">Self-examination</span>
+      <h2>The ABCDE rule, in plain language</h2>
+      <p>What dermatologists teach patients to look for between appointments. Dermora
+         scores the first four automatically; only you can assess the fifth.</p>
+    </div>
+    <div class="abcde-grid">
+      <article class="abcde-card"><span class="letter">A</span><h3>Asymmetry</h3>
+        <p>Fold the mole in half in your mind. If the two halves do not match, note it.</p></article>
+      <article class="abcde-card"><span class="letter">B</span><h3>Border</h3>
+        <p>Edges that are ragged, notched, blurred or scalloped rather than smooth and clean.</p></article>
+      <article class="abcde-card"><span class="letter">C</span><h3>Colour</h3>
+        <p>More than one shade — browns, black, red, white or blue-grey in the same lesion.</p></article>
+      <article class="abcde-card"><span class="letter">D</span><h3>Diameter</h3>
+        <p>Larger than 6 mm, about the width of a pencil eraser. Melanomas can be smaller, so size alone never rules it out.</p></article>
+      <article class="abcde-card evolve"><span class="letter">E</span><h3>Evolving</h3>
+        <p>Any change over weeks or months in size, shape, colour, or new itching, bleeding or crusting. This is the single most important sign — and no single photograph can assess it.</p></article>
+    </div>
+  </section>
+
+  <!-- audience -->
+  <section class="band">
+    <div class="band-head">
+      <span class="kicker">Who it is for</span>
+      <h2>Decision support, not a verdict</h2>
+    </div>
+    <div class="who-grid">
+      <article class="who">
+        <h3>Clinicians</h3>
+        <p>A second read on a dermoscopic image and a triage ordering for a screening
+           queue, with a report that can be attached to the notes.</p>
+      </article>
+      <article class="who">
+        <h3>Students &amp; educators</h3>
+        <p>See a posterior, an attention map and an ABCD workup side by side on the same
+           lesion — a fast way to build pattern recognition.</p>
+      </article>
+      <article class="who">
+        <h3>Researchers</h3>
+        <p>A documented pipeline with an evaluation harness, a model card read live from
+           the checkpoint, and stated limitations.</p>
+      </article>
+    </div>
+  </section>
+
+  <!-- FAQ -->
+  <section class="band">
+    <div class="band-head">
+      <span class="kicker">Questions</span>
+      <h2>Frequently asked</h2>
+    </div>
+    <div class="faq" id="faq"></div>
+  </section>
+
+  <!-- CTA -->
+  <section class="cta-band">
+    <div>
+      <h2>Try it on a lesion right now</h2>
+      <p>Seven annotated sample images are bundled, or drop in your own. Nothing is
+         uploaded anywhere — the model runs on this machine.</p>
+    </div>
+    <button class="btn lg" data-view="analyse">Open the screening tool</button>
+  </section>
+
+  <div class="disclaimer big">
+    <b>Important medical disclaimer.</b> Dermora AI is an academic research prototype.
+    It is not a medical device, has not been cleared or approved by any regulator, and
+    must not be used to make, delay or avoid a medical decision. A negative or benign
+    result from this tool does not rule out cancer. If you are worried about a mole or
+    a skin lesion, see a doctor or dermatologist in person.
+  </div>
+</section>
+
+<!-- ══════════════════════════ SCREENING ══════════════════════════ -->
+<section class="view" id="view-analyse">
+  <div class="workspace-nav">
+    <button class="nav-item pill active" data-view="analyse">Single analysis</button>
+    <button class="nav-item pill" data-view="triage">Batch triage</button>
+    <button class="nav-item pill" data-view="cases">Case history <em class="badge" id="caseCount">0</em></button>
+  </div>
+
+  <header class="head">
+    <div>
+      <h1>Lesion analysis</h1>
+      <p>Seven-class dermoscopic classification with attention mapping and ABCD morphometry.</p>
+    </div>
+    <div class="head-actions">
+      <button class="btn ghost" id="btnSamples">Load sample</button>
+      <button class="btn" id="btnPick">
+        <svg viewBox="0 0 24 24"><path d="M12 16V4M7 9l5-5 5 5M4 17v3h16v-3"/></svg>
+        Upload image
+      </button>
+    </div>
+  </header>
+
+  <div id="dropzone" class="dropzone">
+    <input type="file" id="fileInput" accept="image/*" hidden>
+    <div class="dz-inner">
+      <svg class="dz-icon" viewBox="0 0 64 64">
+        <circle cx="32" cy="32" r="22" class="dz-ring"/>
+        <circle cx="32" cy="32" r="13" class="dz-ring2"/>
+        <path d="M32 24v16M25 31l7-7 7 7"/>
+      </svg>
+      <h2>Drop a dermoscopic image</h2>
+      <p>JPG, PNG, BMP, WebP or TIFF &middot; up to 25 MB &middot; nothing leaves this machine</p>
+      <div class="dz-samples" id="dzSamples"></div>
+    </div>
+  </div>
+
+  <div id="progress" class="progress hidden">
+    <div class="prog-head"><b>Analysing</b><span id="progFile"></span></div>
+    <ol class="steps">
+      <li data-step="quality"><i></i>Image quality gate</li>
+      <li data-step="infer"><i></i>Network inference · 4-view TTA</li>
+      <li data-step="cam"><i></i>Eigen-CAM attention</li>
+      <li data-step="morph"><i></i>ABCD morphometry</li>
+    </ol>
+    <div class="prog-bar"><span></span></div>
+  </div>
+
+  <div id="result" class="result hidden"></div>
+</section>
+
+<!-- ══════════════════════════ TRIAGE ══════════════════════════ -->
+<section class="view" id="view-triage">
+  <div class="workspace-nav">
+    <button class="nav-item pill" data-view="analyse">Single analysis</button>
+    <button class="nav-item pill" data-view="triage">Batch triage</button>
+    <button class="nav-item pill" data-view="cases">Case history</button>
+  </div>
+  <header class="head">
+    <div>
+      <h1>Batch triage</h1>
+      <p>Queue a folder of images and sort the worklist by clinical concern.</p>
+    </div>
+    <div class="head-actions">
+      <button class="btn" id="btnBatchPick">
+        <svg viewBox="0 0 24 24"><path d="M12 16V4M7 9l5-5 5 5M4 17v3h16v-3"/></svg>
+        Select images
+      </button>
+    </div>
+  </header>
+  <input type="file" id="batchInput" accept="image/*" multiple hidden>
+  <div id="batchDrop" class="dropzone compact">
+    <div class="dz-inner">
+      <h2>Drop up to 40 images</h2>
+      <p>Each is scored and the queue is ordered urgent first</p>
+    </div>
+  </div>
+  <div id="batchState" class="batch-state hidden"></div>
+  <div id="batchResult"></div>
+</section>
+
+<!-- ══════════════════════════ CASES ══════════════════════════ -->
+<section class="view" id="view-cases">
+  <div class="workspace-nav">
+    <button class="nav-item pill" data-view="analyse">Single analysis</button>
+    <button class="nav-item pill" data-view="triage">Batch triage</button>
+    <button class="nav-item pill" data-view="cases">Case history</button>
+  </div>
+  <header class="head">
+    <div>
+      <h1>Session cases</h1>
+      <p>Everything analysed since the server started. Held in memory only, never written to disk.</p>
+    </div>
+    <div class="head-actions">
+      <button class="btn ghost" id="btnExportCsv">Export CSV</button>
+      <button class="btn ghost danger" id="btnClearCases">Clear</button>
+    </div>
+  </header>
+  <div id="casesList" class="cases-grid"></div>
+</section>
+
+<!-- ══════════════════════════ LEARN ══════════════════════════ -->
+<section class="view" id="view-learn">
+  <header class="head">
+    <div>
+      <span class="kicker">Learn</span>
+      <h1>Understanding skin cancer</h1>
+      <p>Background reading on what the model is looking for, and what to do about it.</p>
+    </div>
+  </header>
+
+  <div class="learn-layout">
+    <aside class="learn-toc">
+      <b>On this page</b>
+      <a data-scroll="l-basics">The basics</a>
+      <a data-scroll="l-types">The seven classes</a>
+      <a data-scroll="l-dermo">What dermoscopy adds</a>
+      <a data-scroll="l-risk">Risk factors</a>
+      <a data-scroll="l-prevent">Prevention</a>
+      <a data-scroll="l-doctor">When to see a doctor</a>
+      <a data-scroll="l-sources">Sources</a>
+    </aside>
+
+    <div class="learn-body">
+      <article class="panel article" id="l-basics">
+        <div class="panel-body">
+          <h2>The basics</h2>
+          <p>Skin cancer is the most commonly diagnosed cancer group in the world. It is
+             usually divided into two families. <strong>Keratinocyte cancers</strong> —
+             basal cell carcinoma and squamous cell carcinoma — are far more common and
+             rarely fatal, but can destroy local tissue if neglected.
+             <strong>Melanoma</strong> is much rarer, accounting for a small minority of
+             skin cancers, yet it causes the majority of skin-cancer deaths because it
+             can spread early.</p>
+          <p>The single most important variable in melanoma outcome is thickness at
+             diagnosis. A thin, early melanoma is usually cured by a straightforward
+             excision. The same tumour caught later has a substantially worse prognosis.
+             That gap is precisely why screening tools exist, and why the cost of a false
+             alarm is small compared with the cost of a missed lesion.</p>
+          <div class="callout">
+            <b>What this means for a screening tool.</b> The thresholds in Dermora are
+            deliberately tuned towards sensitivity. It would rather send you to a
+            dermatologist unnecessarily than reassure you incorrectly.
+          </div>
+        </div>
+      </article>
+
+      <article class="panel article" id="l-types">
+        <div class="panel-body">
+          <h2>The seven classes</h2>
+          <p>These are the diagnostic categories in the ISIC 2018 Task 3 dataset, which
+             is what this model was trained on. Expand any class for its dermoscopic
+             pattern and management.</p>
+        </div>
+        <div class="panel-body" style="padding-top:0"><div class="taxo" id="learnTaxo"></div></div>
+      </article>
+
+      <article class="panel article" id="l-dermo">
+        <div class="panel-body">
+          <h2>What dermoscopy adds</h2>
+          <p>A dermatoscope is a magnifier with a polarised light source held against the
+             skin. Polarisation cancels the surface glare that normally hides everything
+             below the stratum corneum, so structures inside the lesion — pigment
+             networks, globules, vessels, blue-white veils — become visible.</p>
+          <p>In trained hands dermoscopy substantially improves diagnostic accuracy for
+             melanoma over naked-eye examination. In untrained hands it can be worse than
+             nothing, which is the gap that automated analysis is trying to close.</p>
+          <div class="callout warn">
+            <b>Ordinary phone photographs are out of distribution.</b> Every training
+            image was captured through a dermatoscope. A normal photo of a mole will
+            still produce a result, but that result is much less trustworthy, and the
+            quality gate will usually say so.
+          </div>
+        </div>
+      </article>
+
+      <article class="panel article" id="l-risk">
+        <div class="panel-body">
+          <h2>Risk factors</h2>
+          <div class="two-col">
+            <ul class="feature-list">
+              <li>Fair skin that burns rather than tans, light eyes, red or blond hair</li>
+              <li>A history of blistering sunburn, particularly in childhood</li>
+              <li>High cumulative ultraviolet exposure, occupational or recreational</li>
+              <li>Any use of sunbeds or tanning booths</li>
+            </ul>
+            <ul class="feature-list">
+              <li>A large number of moles, or several atypical or dysplastic ones</li>
+              <li>A personal or first-degree family history of melanoma</li>
+              <li>Immunosuppression, including after organ transplantation</li>
+              <li>Increasing age, though melanoma also affects young adults</li>
+            </ul>
+          </div>
+          <p class="muted">Darker skin is not immune. Melanoma in richly pigmented skin
+             more often appears on the palms, soles and nail beds, and is frequently
+             diagnosed later — which is exactly the population this model's training data
+             covers least well.</p>
+        </div>
+      </article>
+
+      <article class="panel article" id="l-prevent">
+        <div class="panel-body">
+          <h2>Prevention</h2>
+          <div class="two-col">
+            <ul class="feature-list">
+              <li>Broad-spectrum SPF 30+ daily on exposed skin, reapplied every two hours outdoors</li>
+              <li>Shade between late morning and mid-afternoon, when UV peaks</li>
+              <li>Hats, long sleeves and UV-blocking sunglasses beat sunscreen alone</li>
+            </ul>
+            <ul class="feature-list">
+              <li>No sunbeds, at any age, for any reason</li>
+              <li>A monthly self-check in good light, including scalp, soles and between toes</li>
+              <li>Photograph anything you are unsure about, so change is measurable later</li>
+            </ul>
+          </div>
+        </div>
+      </article>
+
+      <article class="panel article" id="l-doctor">
+        <div class="panel-body">
+          <h2>When to see a doctor</h2>
+          <p>Book an appointment — do not wait for a screening tool to agree with you — if
+             any of the following apply:</p>
+          <ul class="feature-list">
+            <li>A mole that has changed in size, shape or colour over weeks or months</li>
+            <li>A new pigmented lesion appearing after roughly age 30</li>
+            <li>A lesion that itches, bleeds, crusts or fails to heal within four weeks</li>
+            <li>The "ugly duckling" — one lesion that looks unlike all your others</li>
+            <li>A dark streak appearing under a fingernail or toenail without injury</li>
+            <li>Any lesion that simply worries you, regardless of what any tool says</li>
+          </ul>
+          <div class="callout danger">
+            <b>Dermora cannot rule anything out.</b> A benign, low-concern result is not
+            clearance. Only a clinician who has examined the lesion in person — and, where
+            needed, histopathology — can do that.
+          </div>
+        </div>
+      </article>
+
+      <article class="panel article" id="l-sources">
+        <div class="panel-body">
+          <h2>Sources &amp; further reading</h2>
+          <ul class="feature-list">
+            <li>Tschandl, Rosendahl &amp; Kittler (2018). <em>The HAM10000 dataset</em>, Scientific Data — the training corpus behind this model.</li>
+            <li>Codella et al. (2018). <em>Skin lesion analysis toward melanoma detection</em>, ISIC challenge — the task definition and class taxonomy.</li>
+            <li>Stolz et al. (1994). <em>ABCD rule of dermatoscopy</em> — the morphometric scoring implemented here.</li>
+            <li>Lee et al. (1997). <em>DullRazor: a software approach to hair removal</em> — the preprocessing step used before segmentation.</li>
+            <li>Muhammad &amp; Yeasin (2020). <em>Eigen-CAM</em>, IJCNN — the attention method used for explanation.</li>
+            <li>Kittler et al. (2002). <em>Diagnostic accuracy of dermoscopy</em>, Lancet Oncology — evidence on what dermoscopy adds.</li>
+          </ul>
+        </div>
+      </article>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════════════ TECHNOLOGY ══════════════════════════ -->
+<section class="view" id="view-model">
+  <header class="head">
+    <div>
+      <span class="kicker">Technology</span>
+      <h1>Model card</h1>
+      <p>Provenance, validation metrics and declared limitations, read live from the checkpoint file.</p>
+    </div>
+  </header>
+  <div id="modelCard" class="model-card"></div>
+</section>
+
+</main>
+
+<!-- ══════════════════════════ FOOTER ══════════════════════════ -->
+<footer class="footer">
+  <div class="footer-inner">
+    <div class="footer-brand">
+      <svg class="mark" viewBox="0 0 40 40" aria-hidden="true">
+        <circle cx="20" cy="20" r="16" class="mark-ring"/>
+        <circle cx="20" cy="20" r="9" class="mark-mid"/>
+        <circle cx="20" cy="20" r="3.4" class="mark-core"/>
+      </svg>
+      <p><strong>Dermora AI</strong><br>
+        AI-assisted dermoscopic lesion screening. An academic research prototype,
+        built on the ISIC 2018 Task 3 dataset.</p>
+    </div>
+    <div class="footer-col">
+      <b>Product</b>
+      <a data-view="analyse">Single analysis</a>
+      <a data-view="triage">Batch triage</a>
+      <a data-view="cases">Case history</a>
+      <a href="/docs" target="_blank" rel="noopener">API documentation</a>
+    </div>
+    <div class="footer-col">
+      <b>Learn</b>
+      <a data-view="learn">Understanding skin cancer</a>
+      <a data-view="learn">The ABCDE rule</a>
+      <a data-view="learn">Risk &amp; prevention</a>
+      <a data-view="learn">When to see a doctor</a>
+    </div>
+    <div class="footer-col">
+      <b>Technology</b>
+      <a data-view="model">Model card</a>
+      <a data-view="model">Validation metrics</a>
+      <a data-view="model">Known limitations</a>
+    </div>
+  </div>
+  <div class="footer-legal">
+    <span>Dermora AI · research prototype · not a medical device · no regulatory clearance</span>
+    <span>Runs entirely on this machine. No image is transmitted anywhere.</span>
+  </div>
+</footer>
+
+<div id="toast" class="toast"></div>
+
+<script src="/static/app.js"></script>
+</body>
+</html>
